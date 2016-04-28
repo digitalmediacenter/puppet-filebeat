@@ -1,4 +1,7 @@
 class filebeat::repo {
+  Exec {
+    path      => [ '/bin', '/usr/bin', '/usr/local/bin' ],
+  }
   case $::osfamily {
     'Debian': {
       include ::apt
