@@ -31,10 +31,19 @@ class filebeat::repo {
       }
     }
     'Suse': {
-      exec { 'topbeat_suse_import_gpg':
-        command => 'rpmkeys --import http://packages.elastic.co/GPG-KEY-elasticsearch',
-        unless  => 'test $(rpm -qa gpg-pubkey | grep -i "D88E42B4" | wc -l) -eq 1 ',
-        notify  => [ Zypprepo['beats'] ],
+      if versioncmp($::operatingsystemrelease, '12') < 0 {
+        exec { 'topbeat_suse_import_gpg':
+          command => 'wget -q -O /tmp/RPM-GPG-KEY-elasticsearch http://packages.elasticsearch.org/GPG-KEY-elasticsearch; rpm --import /tmp/RPM-GPG-KEY-elasticsearch; rm /tmp/RPM-GPG-KEY-elasticsearch',
+          unless  => 'test $(rpm -qa gpg-pubkey | grep -i "D88E42B4" | wc -l) -eq 1 ',
+          notify  => [ Zypprepo['beats'] ],
+        }
+      }
+      else {
+        exec { 'topbeat_suse_import_gpg':
+          command => 'rpmkeys --import http://packages.elastic.co/GPG-KEY-elasticsearch',
+          unless  => 'test $(rpm -qa gpg-pubkey | grep -i "D88E42B4" | wc -l) -eq 1 ',
+          notify  => [ Zypprepo['beats'] ],
+        }
       }
       if !defined(Zypprepo['beats']){
         zypprepo { 'beats':
